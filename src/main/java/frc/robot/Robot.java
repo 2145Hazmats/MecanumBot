@@ -13,7 +13,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends TimedRobot {
-  private final XboxController m_controller = new XboxController(OperatorConstants.DRIVER_CONTROLLER_PORT)
+  private final XboxController m_controller = new XboxController(OperatorConstants.DRIVER_CONTROLLER_PORT);
   private final Drivetrain m_mecanum = new Drivetrain(); // makes a new Drivetrain object
 
   private SendableChooser<String> m_driveSendableChooser = new SendableChooser<String>(); // Allows choosing of the drive method
