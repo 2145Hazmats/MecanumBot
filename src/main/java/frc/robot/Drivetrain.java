@@ -15,46 +15,44 @@ import edu.wpi.first.math.kinematics.MecanumDriveOdometry;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /** Represents a mecanum drive style drivetrain. */
 public class Drivetrain {
-
+  //makes new CAN sparkmax objects
   private final CANSparkMax m_frontLeftMotor = new CANSparkMax(1, MotorType.kBrushless);
   private final CANSparkMax m_frontRightMotor = new CANSparkMax(2, MotorType.kBrushless);
   private final CANSparkMax m_backLeftMotor = new CANSparkMax(3, MotorType.kBrushless);
   private final CANSparkMax m_backRightMotor = new CANSparkMax(4, MotorType.kBrushless);
-
+  //makes new Encoder objects
   private final RelativeEncoder m_frontLeftEncoder = m_frontLeftMotor.getEncoder();
   private final RelativeEncoder m_frontRightEncoder = m_frontRightMotor.getEncoder();
   private final RelativeEncoder m_backLeftEncoder = m_backLeftMotor.getEncoder();
   private final RelativeEncoder m_backRightEncoder = m_backRightMotor.getEncoder();
 
+  //makes our complicated gyro readable by the robot
+  private final ADXRS450_Gyro m_gyro = new ADXRS450_Gyro();
+
+  //makes an object of the mecanumdrive class, we use drive methods of this object
   private MecanumDrive m_robotDrive = new MecanumDrive(
+      // The parameters are consumers to set the speed of the motors
       m_frontLeftMotor::set, m_backLeftMotor::set, m_frontRightMotor::set, m_backRightMotor::set
   );
 
-  private final Translation2d m_frontLeftLocation = new Translation2d();
-  private final Translation2d m_frontRightLocation = new Translation2d();
-  private final Translation2d m_backLeftLocation = new Translation2d();
-  private final Translation2d m_backRightLocation = new Translation2d();
-
-  /*
-  private final PIDController m_frontLeftPIDController = new PIDController(1, 0, 0);
-  private final PIDController m_frontRightPIDController = new PIDController(1, 0, 0);
-  private final PIDController m_backLeftPIDController = new PIDController(1, 0, 0);
-  private final PIDController m_backRightPIDController = new PIDController(1, 0, 0);
-  */
-
-  private final ADXRS450_Gyro m_gyro = new ADXRS450_Gyro();
-
+  //tells the robot where the wheel positions are
+  private final Translation2d m_frontLeftLocation = new Translation2d(0.254, 0.2667);
+  private final Translation2d m_frontRightLocation = new Translation2d(0.254, -0.2667);
+  private final Translation2d m_backLeftLocation = new Translation2d(-0.254, 0.2667);
+  private final Translation2d m_backRightLocation = new Translation2d(-0.254, -0.2667);
+  // makes a kinematics object of the mecanum drive using wheel positions
   private final MecanumDriveKinematics m_kinematics =
       new MecanumDriveKinematics(m_frontLeftLocation, m_frontRightLocation, m_backLeftLocation, m_backRightLocation);
-
+  // makes a MecanumDriveOdometry object that tells the robot where it is using motor encoders, gyro, and math
   private final MecanumDriveOdometry m_odometry =
       new MecanumDriveOdometry(
           m_kinematics,
-          m_gyro.getRotation2d(),
+          this.getGyroRotaion2d(),
           new MecanumDriveWheelPositions(
             m_frontLeftEncoder.getPosition(),
             m_frontRightEncoder.getPosition(),
@@ -63,22 +61,27 @@ public class Drivetrain {
           )
       );
 
+  // places the field into smartDashboard. We use this to place the robot's position on smartdashboard
+  private final Field2d m_field = new Field2d();
+
   /* Constructs a MecanumDrive and resets the gyro. */
   public Drivetrain() {
-    m_frontRightMotor.setInverted(false);
-    m_backRightMotor.setInverted(false);
-    m_gyro.reset();
-    m_gyro.calibrate();
+    m_gyro.reset();     // sets the gyro angle to 0 degrees
+    m_gyro.calibrate(); // calibrates the gyro
+    SmartDashboard.putData("Field", m_field);
   }
 
+  /* returns the inverted gyro angle for proper rotation */
   public double getGyroAngle() {
     return -m_gyro.getAngle();
   }
+
+  /* returns the inverted gyro rotation2d */
   public Rotation2d getGyroRotaion2d() {
     return m_gyro.getRotation2d().times(-1);
   }
 
-  /** Makes the drive method
+  /** Mecanum drive method
    * 
    * @param getY Forward movement
    * @param getX Lateral movement
@@ -86,10 +89,12 @@ public class Drivetrain {
    * @param driveString Changes driving base based on chosen option
    */
   public void drive(double getY, double getX, double getZ, String driveString) {
+    // Limits the max speed and rotation speeds
     getY = getY * DriveTrainConstants.MAX_SPEED;
     getX = getX * DriveTrainConstants.MAX_SPEED;
     getZ = getZ * DriveTrainConstants.ROTATION_MAX_SPEED;
 
+    // allows us to choose different drive methods. we select/change driveString in smartdashboard to choose different drive types
     switch (driveString) {
       case "robotCentric":
         m_robotDrive.driveCartesian(getY, getX, getZ);
@@ -100,124 +105,36 @@ public class Drivetrain {
       case "polar":
         m_robotDrive.drivePolar(getY, getGyroRotaion2d(), getZ);
         break;
-    
-      default:
+      default: // should not run, but included to avoid errors during an invalid driveString
         break;
     }
+
+    // places forward and sideways speed, as well as rotation of the robot into SmartDashboard
     SmartDashboard.putNumber("GetY", getY);
     SmartDashboard.putNumber("GetX", getX);
     SmartDashboard.putNumber("GetZ", getZ);
   }
 
-  /** Updates the field relative position of the robot. */
-  /*
-  public void updateOdometry() {
-    m_odometry.update(m_gyro.getRotation2d(), getCurrentDistances());
-  }
-  */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  /**
-   * Returns the current state of the drivetrain.
-   *
-   * @return The current state of the drivetrain.
-   */
-  /*
-  public MecanumDriveWheelSpeeds getCurrentState() {
-    return new MecanumDriveWheelSpeeds(
-        m_frontLeftEncoder.getVelocity(),
-        m_frontRightEncoder.getVelocity(),
-        m_backLeftEncoder.getVelocity(),
-        m_backRightEncoder.getVelocity()
+  /* Called periodically in Robot.java */
+  public void drivetrainPeriodic() {
+    // Gets the encoder position for each wheel
+    MecanumDriveWheelPositions wheelPositions = new MecanumDriveWheelPositions(
+      m_frontLeftEncoder.getPosition(),
+      m_frontRightEncoder.getPosition(), 
+      m_backLeftEncoder.getPosition(),
+      m_backRightEncoder.getPosition()
     );
+    // updates the odometry using the current wheel positions compared to old wheel positions and GyroRotation2d
+    m_odometry.update(getGyroRotaion2d(), wheelPositions);
+
+    // places the wheel positions and gyro angle into SmartDashboard
+    SmartDashboard.putNumber("Encoder position FrontLeft", m_frontLeftEncoder.getPosition());
+    SmartDashboard.putNumber("Encoder position FrontRight", m_frontRightEncoder.getPosition());
+    SmartDashboard.putNumber("Encoder position BackLeft", m_backLeftEncoder.getPosition());
+    SmartDashboard.putNumber("Encoder position BackRight", m_backRightEncoder.getPosition());
+    SmartDashboard.putNumber("Gyro Angle", getGyroAngle());
+    // publishes the robot pose and updates it onto the field in SmartDashboard
+    m_field.setRobotPose(m_odometry.getPoseMeters());
   }
-  */
 
-  /**
-   * Set the desired speeds for each wheel.
-   *
-   * @param speeds The desired wheel speeds.
-   */
-  /*
-  public void setSpeeds(MecanumDriveWheelSpeeds speeds) {
-    final double frontLeftFeedforward = m_feedforward.calculate(speeds.frontLeftMetersPerSecond);
-    final double frontRightFeedforward = m_feedforward.calculate(speeds.frontRightMetersPerSecond);
-    final double backLeftFeedforward = m_feedforward.calculate(speeds.rearLeftMetersPerSecond);
-    final double backRightFeedforward = m_feedforward.calculate(speeds.rearRightMetersPerSecond);
-
-    final double frontLeftOutput =
-        m_frontLeftPIDController.calculate(
-            m_frontLeftEncoder.getVelocity(), speeds.frontLeftMetersPerSecond);
-    final double frontRightOutput =
-        m_frontRightPIDController.calculate(
-            m_frontRightEncoder.getVelocity(), speeds.frontRightMetersPerSecond);
-    final double backLeftOutput =
-        m_backLeftPIDController.calculate(
-            m_backLeftEncoder.getVelocity(), speeds.rearLeftMetersPerSecond);
-    final double backRightOutput =
-        m_backRightPIDController.calculate(
-            m_backRightEncoder.getVelocity(), speeds.rearRightMetersPerSecond);
-
-    m_frontLeftMotor.setVoltage(frontLeftOutput + frontLeftFeedforward);
-    m_frontRightMotor.setVoltage(frontRightOutput + frontRightFeedforward);
-    m_backLeftMotor.setVoltage(backLeftOutput + backLeftFeedforward);
-    m_backRightMotor.setVoltage(backRightOutput + backRightFeedforward);
-  }
-  */
-
-  /**
-   * Old method to drive the robot using joystick info.
-   *
-   * @param xSpeed Speed of the robot in the x direction (forward).
-   * @param ySpeed Speed of the robot in the y direction (sideways).
-   * @param rot Angular rate of the robot.
-   * @param fieldRelative Whether the provided x and y speeds are relative to the field.
-   */
-  /*
-  public void drive(
-      double xSpeed, double ySpeed, double rot, boolean fieldRelative, double periodSeconds) {
-    var mecanumDriveWheelSpeeds =
-        m_kinematics.toWheelSpeeds(
-            ChassisSpeeds.discretize(
-                fieldRelative
-                    ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                        xSpeed, ySpeed, rot, m_gyro.getRotation2d())
-                    : new ChassisSpeeds(xSpeed, ySpeed, rot),
-                periodSeconds));
-    mecanumDriveWheelSpeeds.desaturate(kMaxSpeed);
-    setSpeeds(mecanumDriveWheelSpeeds);
-  }
-  */
 }

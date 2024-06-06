@@ -32,20 +32,18 @@ public class Robot extends TimedRobot {
     m_driveSendableChooser.setDefaultOption("robotCentric",  "robotCentric");
     m_driveSendableChooser.addOption("fieldRelative", "fieldRelative");
     m_driveSendableChooser.addOption("polar", "polar");
-    SmartDashboard.putData("driveString", m_driveSendableChooser);
+    SmartDashboard.putData("Drive Type", m_driveSendableChooser);
   }
 
   /* happens every 20 milliseconds regardless of auton or teleop */ 
   @Override
   public void robotPeriodic() {
-    SmartDashboard.putNumber("Gyro Angle", m_mecanum.getGyroAngle());
+    m_mecanum.drivetrainPeriodic();
   }
 
   /* happens every 20 milliseconds while in auton */
   @Override
-  public void autonomousPeriodic() {
-    //m_mecanum.updateOdometry();
-  }
+  public void autonomousPeriodic() { }
 
   /* happens every 20 milliseconds while in teleop */
   @Override
