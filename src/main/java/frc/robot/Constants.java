@@ -13,6 +13,7 @@ public final class Constants {
         public static final double ACCELERATION_LIMIT_RATE = 5; // Rate-of-change limit for speed, units per second.
         public static final double ROTATION_LIMIT_RATE = 5; // Rate-of-change limit for speed, units per second, rotation-wise
         public static final double DEACCELERATION_LIMIT_RATE = 7; // How fast the robot comes to a stop in seconds: (1/DEACCELERATION)
+        public static final double ENCODER_CONVERSION_FACTOR = 0.1; // Should converts from random numbers to meters on encoder values (not accurate)
     }
  
     public static class OperatorConstants {

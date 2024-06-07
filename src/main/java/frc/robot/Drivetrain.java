@@ -52,7 +52,7 @@ public class Drivetrain {
   private final MecanumDriveOdometry m_odometry =
       new MecanumDriveOdometry(
           m_kinematics,
-          this.getGyroRotaion2d(),
+          m_gyro.getRotation2d(),
           new MecanumDriveWheelPositions(
             m_frontLeftEncoder.getPosition(),
             m_frontRightEncoder.getPosition(),
@@ -66,6 +66,16 @@ public class Drivetrain {
 
   /* Constructs a MecanumDrive and resets the gyro. */
   public Drivetrain() {
+    m_frontLeftMotor.restoreFactoryDefaults();
+    m_frontLeftMotor.restoreFactoryDefaults();
+    m_backLeftMotor.restoreFactoryDefaults();
+    m_backRightMotor.restoreFactoryDefaults();
+
+    m_frontLeftEncoder.setPositionConversionFactor(DriveTrainConstants.ENCODER_CONVERSION_FACTOR);
+    m_frontRightEncoder.setPositionConversionFactor(DriveTrainConstants.ENCODER_CONVERSION_FACTOR);
+    m_backLeftEncoder.setPositionConversionFactor(DriveTrainConstants.ENCODER_CONVERSION_FACTOR);
+    m_backRightEncoder.setPositionConversionFactor(DriveTrainConstants.ENCODER_CONVERSION_FACTOR);
+
     m_gyro.reset();     // sets the gyro angle to 0 degrees
     m_gyro.calibrate(); // calibrates the gyro
     SmartDashboard.putData("Field", m_field);
@@ -125,7 +135,7 @@ public class Drivetrain {
       m_backRightEncoder.getPosition()
     );
     // updates the odometry using the current wheel positions compared to old wheel positions and GyroRotation2d
-    m_odometry.update(getGyroRotaion2d(), wheelPositions);
+    m_odometry.update(m_gyro.getRotation2d(), wheelPositions);
 
     // places the wheel positions and gyro angle into SmartDashboard
     SmartDashboard.putNumber("Encoder position FrontLeft", m_frontLeftEncoder.getPosition());

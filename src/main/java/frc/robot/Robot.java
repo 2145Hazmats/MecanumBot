@@ -28,17 +28,17 @@ public class Robot extends TimedRobot {
   /* As the robot is turned on, places these values into ShuffleBoard. This method is called once */
   @Override
   public void robotInit() {
-    SmartDashboard.putBoolean("fieldRelative", true);
     m_driveSendableChooser.setDefaultOption("robotCentric",  "robotCentric");
     m_driveSendableChooser.addOption("fieldRelative", "fieldRelative");
     m_driveSendableChooser.addOption("polar", "polar");
-    SmartDashboard.putData("Drive Type", m_driveSendableChooser);
+    SmartDashboard.putData("driveString", m_driveSendableChooser);
   }
 
   /* happens every 20 milliseconds regardless of auton or teleop */ 
   @Override
   public void robotPeriodic() {
     m_mecanum.drivetrainPeriodic();
+    SmartDashboard.putString("Selected Drive Type", m_driveSendableChooser.getSelected());
   }
 
   /* happens every 20 milliseconds while in auton */
